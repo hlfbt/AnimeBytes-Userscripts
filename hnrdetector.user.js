@@ -5,7 +5,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Highlights torrents which might become a Hit & Run; allows sorting on all history-pages
 // @include     http*://animebytes.tv*alltorrents.php*
-// @version     0.7
+// @version     0.8
 // @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
@@ -13,9 +13,13 @@
 
 
 (function() {
-  var a1, a2, allRows, andRe, auto_color, clonedNode, curPage, currencyRe, dateTimeRe, downIndex, downRe, dur2string, durIndex, durationRe, header, headers, index, lastPage, line_color_neg, line_color_neu, line_color_pos, loadPage, multiRatio, newPagenum, nextPage, pagenum, pagenums, parseCell, parseRows, prevPage, ratioIndex, ratioRe, sizeIndex, sizeRe, sortFunctions, sortIndex, unitPrefix, _i, _j, _len, _len1;
+  var a1, a2, allRows, andRe, clonedNode, colorRows, curPage, currencyRe, dateTimeRe, downIndex, downRe, dur2string, durIndex, durationRe, dynamicLoad, header, headers, index, lastPage, line_color_neg, line_color_neu, line_color_pos, loadPage, multiRatio, newPagenum, nextPage, pagenum, pagenums, parseCell, parseRows, prevPage, ratioIndex, ratioRe, sizeIndex, sizeRe, sortFunctions, sortIndex, sortRows, unitPrefix, _i, _j, _len, _len1;
 
-  auto_color = GM_getValue("ABHistAutoColor", true);
+  colorRows = GM_getValue("ABHistColorRows", true);
+
+  sortRows = GM_getValue("ABHistSortRows", true);
+
+  dynamicLoad = GM_getValue("ABHistDynLoad", true);
 
   line_color_neg = ['NavajoWhite', 'Black'];
 
@@ -167,26 +171,25 @@
   };
 
   parseRows = function(myDocument) {
-    var cell, completion, downloaded, index, line_color, minSeedingTime, myData, ratio, row, seedingTime, size, torrent_rows, _i, _len, _ref, _results;
+    var cell, completion, downloaded, index, line_color, minSeedingTime, myData, ratio, row, seedingTime, size, torrent_rows, _i, _len, _ref;
     torrent_rows = myDocument.querySelectorAll('tr[class="torrent"]');
-    _results = [];
     for (_i = 0, _len = torrent_rows.length; _i < _len; _i++) {
       row = torrent_rows[_i];
       myData = (function() {
-        var _j, _len1, _ref, _results1;
+        var _j, _len1, _ref, _results;
         _ref = row.cells;
-        _results1 = [];
+        _results = [];
         for (index = _j = 0, _len1 = _ref.length; _j < _len1; index = ++_j) {
           cell = _ref[index];
-          _results1.push(parseCell(cell, index));
+          _results.push(parseCell(cell, index));
         }
-        return _results1;
+        return _results;
       })();
       completion = 100;
       downloaded = 0;
       size = 0;
       ratio = 0;
-      line_color = line_color_neu;
+      line_color = [null, null];
       if (downIndex != null) {
         _ref = myData[downIndex], downloaded = _ref[0], completion = _ref[1];
         if (completion > 0) {
@@ -221,7 +224,7 @@
           line_color = line_color_neu;
           myData[durIndex] = Math.min(0.000001 * (completion + 1), minSeedingTime - seedingTime);
         }
-        if (auto_color) {
+        if (colorRows === true) {
           if (line_color[0] != null) {
             row.style.backgroundColor = line_color[0];
           }
@@ -229,62 +232,55 @@
             row.style.color = line_color[1];
           }
         }
-      } else {
-        line_color = [null, null];
       }
       if (headers[0] != null) {
         headers[0].parentNode.parentNode.appendChild(row);
       }
-      _results.push(allRows.push([row, line_color].concat(myData)));
+      if (sortRows === true) {
+        allRows.push([row].concat(myData));
+      }
     }
-    return _results;
+    return void 0;
   };
 
   sortIndex = null;
 
   sortFunctions = function(index, force) {
     return function(event) {
-      var ind, row, _i, _len, _results;
+      var row, _i, _len;
       if (event != null) {
         event.stopPropagation();
         event.preventDefault();
       }
-      if ((index != null) && (allRows[0] != null) && allRows[0].length > index) {
-        if (sortIndex === index && !force) {
+      if ((index != null) && (allRows[0] != null)) {
+        if (sortIndex === index && force === false) {
           allRows.reverse();
         } else {
           sortIndex = index;
           allRows.sort(function(a, b) {
-            if ((a[index + 2] != null) && (b[index + 2] != null)) {
-              if (a[index + 2] > b[index + 2]) {
+            if ((a[index + 1] != null) && (b[index + 1] != null)) {
+              if (a[index + 1] > b[index + 1]) {
                 return -1;
-              } else if (a[index + 2] < b[index + 2]) {
+              } else if (a[index + 1] < b[index + 1]) {
                 return 1;
               } else {
                 return 0;
               }
-            } else if ((a[index + 2] != null) && (b[index + 2] == null)) {
+            } else if ((a[index + 1] != null) && (b[index + 1] == null)) {
               return -1;
-            } else if ((b[index + 2] != null) && (a[index + 2] == null)) {
+            } else if ((b[index + 1] != null) && (a[index + 1] == null)) {
               return 1;
             } else {
               return 0;
             }
           });
         }
-        _results = [];
-        for (ind = _i = 0, _len = allRows.length; _i < _len; ind = ++_i) {
-          row = allRows[ind];
-          if (!auto_color && (row[1][0] != null)) {
-            row[0].style.backgroundColor = row[1][0];
-          }
-          if (!auto_color && (row[1][1] != null)) {
-            row[0].style.color = row[1][1];
-          }
-          _results.push(row[0].parentNode.appendChild(row[0]));
+        for (_i = 0, _len = allRows.length; _i < _len; _i++) {
+          row = allRows[_i];
+          row[0].parentNode.appendChild(row[0]);
         }
-        return _results;
       }
+      return void 0;
     };
   };
 
@@ -298,106 +294,103 @@
 
   parseRows(document);
 
-  for (index = _i = 0, _len = headers.length; _i < _len; index = ++_i) {
-    header = headers[index];
-    a1 = document.createElement('a');
-    a1.href = '#';
-    if (index === 0) {
-      a1.textContent = 'Type';
-    } else if ((header.querySelector('a') != null) || header.textContent.trim() === '') {
-      a1.textContent = '*';
-    } else {
-      a1.textContent = header.textContent;
-    }
-    if (a1.textContent !== '*') {
-      while (header.hasChildNodes()) {
-        header.removeChild(header.lastChild);
+  if (sortRows === true) {
+    for (index = _i = 0, _len = headers.length; _i < _len; index = ++_i) {
+      header = headers[index];
+      a1 = document.createElement('a');
+      a1.href = '#';
+      if (index === 0) {
+        a1.textContent = 'Type';
+      } else if ((header.querySelector('a') != null) || header.textContent.trim() === '') {
+        a1.textContent = '*';
+      } else {
+        a1.textContent = header.textContent;
       }
+      if (a1.textContent !== '*') {
+        while (header.hasChildNodes()) {
+          header.removeChild(header.lastChild);
+        }
+      }
+      header.appendChild(a1);
+      a1.addEventListener('click', sortFunctions(index, false), true);
     }
-    header.appendChild(a1);
-    a1.addEventListener('click', sortFunctions(index, false), true);
   }
 
-  curPage = document.URL.match(/page=(\d+)/i);
-
-  curPage = curPage != null ? parseInt(curPage[1], 10) : 1;
-
-  prevPage = curPage - 1;
-
-  nextPage = curPage + 1;
-
-  lastPage = 1;
-
-  pagenums = document.querySelectorAll('div.pagenums');
-
-  loadPage = function(prev) {
-    if (prev == null) {
-      prev = false;
-    }
-    return function(event) {
-      var newPage, newURL, xhr;
-      if (event != null) {
-        event.stopPropagation();
-        event.preventDefault();
+  if (dynamicLoad === true) {
+    curPage = document.URL.match(/page=(\d+)/i);
+    curPage = curPage != null ? parseInt(curPage[1], 10) : 1;
+    prevPage = curPage - 1;
+    nextPage = curPage + 1;
+    lastPage = 1;
+    pagenums = document.querySelectorAll('div.pagenums');
+    loadPage = function(prev) {
+      if (prev == null) {
+        prev = false;
       }
-      if (prev) {
-        newPage = prevPage--;
-      } else {
-        newPage = nextPage++;
-      }
-      if (newPage < 1 || newPage > lastPage) {
-        return;
-      }
-      newURL = document.URL.split('#')[0];
-      if (newURL.indexOf('page=') >= 0) {
-        newURL = newURL.replace(/page=(\d+)/i, "page=" + newPage);
-      } else {
-        newURL += "&page=" + newPage;
-      }
-      xhr = new XMLHttpRequest();
-      xhr.open('GET', newURL, true);
-      xhr.send();
-      return xhr.onreadystatechange = function() {
-        var newDoc, parser;
-        if (xhr.readyState === 4) {
-          parser = new DOMParser();
-          newDoc = parser.parseFromString(xhr.responseText, 'text/html');
-          parseRows(newDoc);
-          return sortFunctions(sortIndex, true)(null);
+      return function(event) {
+        var newPage, newURL, xhr;
+        if (event != null) {
+          event.stopPropagation();
+          event.preventDefault();
         }
+        if (prev) {
+          newPage = prevPage--;
+        } else {
+          newPage = nextPage++;
+        }
+        if (newPage < 1 || newPage > lastPage) {
+          return;
+        }
+        newURL = document.URL.split('#')[0];
+        if (newURL.indexOf('page=') >= 0) {
+          newURL = newURL.replace(/page=(\d+)/i, "page=" + newPage);
+        } else {
+          newURL += "&page=" + newPage;
+        }
+        xhr = new XMLHttpRequest();
+        xhr.open('GET', newURL, true);
+        xhr.send();
+        return xhr.onreadystatechange = function() {
+          var newDoc, parser;
+          if (xhr.readyState === 4) {
+            parser = new DOMParser();
+            newDoc = parser.parseFromString(xhr.responseText, 'text/html');
+            parseRows(newDoc);
+            return sortFunctions(sortIndex, true)(null);
+          }
+        };
       };
     };
-  };
-
-  for (_j = 0, _len1 = pagenums.length; _j < _len1; _j++) {
-    pagenum = pagenums[_j];
-    if (pagenum.lastChild.href != null) {
-      lastPage = pagenum.lastChild.href.match(/page=(\d+)/i);
-      lastPage = lastPage != null ? parseInt(lastPage[1], 10) : 1;
-    } else {
-      lastPage = parseInt(pagenum.lastChild.textContent, 10);
-      if (isNaN(lastPage)) {
-        lastPage = 1;
+    for (_j = 0, _len1 = pagenums.length; _j < _len1; _j++) {
+      pagenum = pagenums[_j];
+      if (pagenum.lastChild.href != null) {
+        lastPage = pagenum.lastChild.href.match(/page=(\d+)/i);
+        lastPage = lastPage != null ? parseInt(lastPage[1], 10) : 1;
+      } else {
+        lastPage = parseInt(pagenum.lastChild.textContent, 10);
+        if (isNaN(lastPage)) {
+          lastPage = 1;
+        }
       }
+      clonedNode = pagenum.parentNode.cloneNode(true);
+      newPagenum = clonedNode.querySelector('div[class="pagenums"]');
+      while (newPagenum.hasChildNodes()) {
+        newPagenum.removeChild(newPagenum.lastChild);
+      }
+      a1 = document.createElement('a');
+      a1.href = '#';
+      a1.className = 'next-prev';
+      a1.textContent = 'Load next page dynamically →';
+      a2 = document.createElement('a');
+      a2.href = '#';
+      a2.className = 'next-prev';
+      a2.textContent = '← Load previous page dynamically';
+      newPagenum.appendChild(a2);
+      newPagenum.appendChild(a1);
+      a1.addEventListener('click', loadPage(false), true);
+      a2.addEventListener('click', loadPage(true), true);
+      pagenum.parentNode.parentNode.insertBefore(clonedNode, pagenum.parentNode.nextSibling);
     }
-    clonedNode = pagenum.parentNode.cloneNode(true);
-    newPagenum = clonedNode.querySelector('div[class="pagenums"]');
-    while (newPagenum.hasChildNodes()) {
-      newPagenum.removeChild(newPagenum.lastChild);
-    }
-    a1 = document.createElement('a');
-    a1.href = '#';
-    a1.className = 'next-prev';
-    a1.textContent = 'Load next page dynamically →';
-    a2 = document.createElement('a');
-    a2.href = '#';
-    a2.className = 'next-prev';
-    a2.textContent = '← Load previous page dynamically';
-    newPagenum.appendChild(a2);
-    newPagenum.appendChild(a1);
-    a1.addEventListener('click', loadPage(false), true);
-    a2.addEventListener('click', loadPage(true), true);
-    pagenum.parentNode.parentNode.insertBefore(clonedNode, pagenum.parentNode.nextSibling);
   }
 
 }).call(this);
