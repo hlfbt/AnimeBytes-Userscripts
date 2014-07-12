@@ -4,19 +4,18 @@
 // @name        Hit&Run Detector
 // @namespace   Megure@AnimeBytes.tv
 // @description Highlights torrents which might become a Hit & Run; allows sorting on all history-pages
-// @include     http*://yuki.animebyt*alltorrents.php*
-// @include     http*://animebyt*alltorrents.php*
-// @version     0.6
-// @grant       none
+// @include     http*://animebytes.tv*alltorrents.php*
+// @version     0.7
+// @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
 */
 
 
 (function() {
-  var a1, a2, allRows, andRe, auto_color, clonedNode, curPage, dateTimeRe, downIndex, downRe, dur2string, durIndex, durationRe, header, headers, index, lastPage, line_color_neg, line_color_neu, line_color_pos, loadPage, multiRatio, newPagenum, nextPage, pagenum, pagenums, parseCell, parseRows, prevPage, ratioIndex, ratioRe, sizeIndex, sizeRe, sortFunctions, sortIndex, unitPrefix, yenRe, _i, _j, _len, _len1;
+  var a1, a2, allRows, andRe, auto_color, clonedNode, curPage, currencyRe, dateTimeRe, downIndex, downRe, dur2string, durIndex, durationRe, header, headers, index, lastPage, line_color_neg, line_color_neu, line_color_pos, loadPage, multiRatio, newPagenum, nextPage, pagenum, pagenums, parseCell, parseRows, prevPage, ratioIndex, ratioRe, sizeIndex, sizeRe, sortFunctions, sortIndex, unitPrefix, _i, _j, _len, _len1;
 
-  auto_color = true;
+  auto_color = GM_getValue("ABHistAutoColor", true);
 
   line_color_neg = ['NavajoWhite', 'Black'];
 
@@ -28,7 +27,7 @@
 
   downRe = /^([\d\.]+)\s([A-Z]?)B\s\(([\d\.]+)%\)$/i;
 
-  ratioRe = /^(8|\-\-|[\d\.]+)$/i;
+  ratioRe = /^(∞|\-\-|[\d\.]+)$/i;
 
   andRe = /(and|\s)/ig;
 
@@ -36,7 +35,7 @@
 
   dateTimeRe = /^(\d+)\-(\d{1,2})\-(\d{1,2})\s+(\d{1,2}):(\d{1,2})$/i;
 
-  yenRe = /^�([\d\.]+)$/i;
+  currencyRe = /^(?:[¥|€|£|\$]\s*)([\d\.]+)$/i;
 
   downIndex = null;
 
@@ -114,7 +113,7 @@
         _results = [];
         for (_i = 0, _len = match.length; _i < _len; _i++) {
           num = match[_i];
-          _results.push(parseInt(num));
+          _results.push(parseInt(num, 10));
         }
         return _results;
       })();
@@ -130,7 +129,7 @@
         for (_i = 0, _len = match.length; _i < _len; _i++) {
           num = match[_i];
           if (num != null) {
-            _results.push(parseInt(num));
+            _results.push(parseInt(num, 10));
           } else {
             _results.push(0);
           }
@@ -139,7 +138,7 @@
       })();
       return 24 * (match[0] * 365.25 + match[1] * 30.4375 + match[2] * 7 + match[3]) + match[4] + match[5] / 60 + match[6] / 3600;
     }
-    match = textContentNoComma.match(yenRe);
+    match = textContentNoComma.match(currencyRe);
     if (match != null) {
       return parseFloat(match[1]);
     }
@@ -150,7 +149,7 @@
       }
       ratioIndex = index;
       switch (match[1]) {
-        case '8':
+        case '∞':
           return Infinity;
         case '--':
           return -0.2;
@@ -175,7 +174,7 @@
       row = torrent_rows[_i];
       myData = (function() {
         var _j, _len1, _ref, _results1;
-        _ref = row.getElementsByTagName('td');
+        _ref = row.cells;
         _results1 = [];
         for (index = _j = 0, _len1 = _ref.length; _j < _len1; index = ++_j) {
           cell = _ref[index];
@@ -211,7 +210,7 @@
         } else if (completion >= 10 && ratio < 1 && seedingTime < minSeedingTime) {
           line_color = line_color_neg;
           myData[durIndex] = minSeedingTime - seedingTime;
-          row.getElementsByTagName('td')[durIndex].innerHTML += "<br />(~" + (dur2string(minSeedingTime - seedingTime)) + "h to seed)";
+          row.cells[durIndex].innerHTML += "<br />(~" + (dur2string(minSeedingTime - seedingTime)) + "h to seed)";
         } else if (seedingTime >= minSeedingTime || ratio >= 1) {
           line_color = line_color_pos;
           myData[durIndex] = Math.min(0, minSeedingTime - seedingTime);
@@ -220,7 +219,7 @@
           myData[durIndex] = Math.min(0, minSeedingTime - seedingTime);
         } else {
           line_color = line_color_neu;
-          myData[durIndex] = Math.min(0.0001, minSeedingTime - seedingTime);
+          myData[durIndex] = Math.min(0.000001 * (completion + 1), minSeedingTime - seedingTime);
         }
         if (auto_color) {
           if (line_color[0] != null) {
@@ -244,9 +243,6 @@
   sortIndex = null;
 
   sortFunctions = function(index, force) {
-    if (force == null) {
-      force = false;
-    }
     return function(event) {
       var ind, row, _i, _len, _results;
       if (event != null) {
@@ -295,7 +291,7 @@
   headers = document.querySelector('tr.colhead');
 
   if (headers != null) {
-    headers = headers.getElementsByTagName('td');
+    headers = headers.cells;
   } else {
     headers = [];
   }
@@ -319,12 +315,12 @@
       }
     }
     header.appendChild(a1);
-    a1.addEventListener('click', sortFunctions(index), true);
+    a1.addEventListener('click', sortFunctions(index, false), true);
   }
 
   curPage = document.URL.match(/page=(\d+)/i);
 
-  curPage = curPage != null ? parseInt(curPage[1]) : 1;
+  curPage = curPage != null ? parseInt(curPage[1], 10) : 1;
 
   prevPage = curPage - 1;
 
@@ -377,9 +373,9 @@
     pagenum = pagenums[_j];
     if (pagenum.lastChild.href != null) {
       lastPage = pagenum.lastChild.href.match(/page=(\d+)/i);
-      lastPage = lastPage != null ? parseInt(lastPage[1]) : 1;
+      lastPage = lastPage != null ? parseInt(lastPage[1], 10) : 1;
     } else {
-      lastPage = parseInt(pagenum.lastChild.textContent);
+      lastPage = parseInt(pagenum.lastChild.textContent, 10);
       if (isNaN(lastPage)) {
         lastPage = 1;
       }
@@ -392,11 +388,11 @@
     a1 = document.createElement('a');
     a1.href = '#';
     a1.className = 'next-prev';
-    a1.textContent = 'Load next page dynamically ?';
+    a1.textContent = 'Load next page dynamically →';
     a2 = document.createElement('a');
     a2.href = '#';
     a2.className = 'next-prev';
-    a2.textContent = '? Load previous page dynamically';
+    a2.textContent = '← Load previous page dynamically';
     newPagenum.appendChild(a2);
     newPagenum.appendChild(a1);
     a1.addEventListener('click', loadPage(false), true);
