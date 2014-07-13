@@ -5,7 +5,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Highlights torrents which might become a Hit & Run; allows sorting on all history-pages
 // @include     http*://animebytes.tv*alltorrents.php*
-// @version     0.8
+// @version     0.81
 // @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
@@ -15,11 +15,11 @@
 (function() {
   var a1, a2, allRows, andRe, clonedNode, colorRows, curPage, currencyRe, dateTimeRe, downIndex, downRe, dur2string, durIndex, durationRe, dynamicLoad, header, headers, index, lastPage, line_color_neg, line_color_neu, line_color_pos, loadPage, multiRatio, newPagenum, nextPage, pagenum, pagenums, parseCell, parseRows, prevPage, ratioIndex, ratioRe, sizeIndex, sizeRe, sortFunctions, sortIndex, sortRows, unitPrefix, _i, _j, _len, _len1;
 
-  colorRows = GM_getValue("ABHistColorRows", true);
+  colorRows = GM_getValue('ABHistColorRows', 'true');
 
-  sortRows = GM_getValue("ABHistSortRows", true);
+  sortRows = GM_getValue('ABHistSortRows', 'true');
 
-  dynamicLoad = GM_getValue("ABHistDynLoad", true);
+  dynamicLoad = GM_getValue('ABHistDynLoad', 'true');
 
   line_color_neg = ['NavajoWhite', 'Black'];
 
@@ -224,7 +224,7 @@
           line_color = line_color_neu;
           myData[durIndex] = Math.min(0.000001 * (completion + 1), minSeedingTime - seedingTime);
         }
-        if (colorRows === true) {
+        if (colorRows.toString() === 'true') {
           if (line_color[0] != null) {
             row.style.backgroundColor = line_color[0];
           }
@@ -236,7 +236,7 @@
       if (headers[0] != null) {
         headers[0].parentNode.parentNode.appendChild(row);
       }
-      if (sortRows === true) {
+      if (sortRows.toString() === 'true') {
         allRows.push([row].concat(myData));
       }
     }
@@ -294,7 +294,7 @@
 
   parseRows(document);
 
-  if (sortRows === true) {
+  if (sortRows.toString() === 'true') {
     for (index = _i = 0, _len = headers.length; _i < _len; index = ++_i) {
       header = headers[index];
       a1 = document.createElement('a');
@@ -316,7 +316,7 @@
     }
   }
 
-  if (dynamicLoad === true) {
+  if (dynamicLoad.toString() === 'true') {
     curPage = document.URL.match(/page=(\d+)/i);
     curPage = curPage != null ? parseInt(curPage[1], 10) : 1;
     prevPage = curPage - 1;

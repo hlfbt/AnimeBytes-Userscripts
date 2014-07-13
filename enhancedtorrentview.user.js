@@ -3,15 +3,15 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Shows how much yen you would receive if you seeded torrents; shows required seeding time
 // @include     http*://animebytes.tv*
-// @version     0.7
+// @version     0.8
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
 
 (function() {
-    var showYen = GM_getValue('showYen', true), // true / false: activate / deactivate display of yen production per hour
-        reqTime = GM_getValue('reqTime', true), // true / false: activate / deactivate display of required seeding time
+    var showYen = GM_getValue('ABTorrentsShowYen', 'true'), // true / false: activate / deactivate display of yen production per hour
+        reqTime = GM_getValue('ABTorrentsReqTime', 'true'), // true / false: activate / deactivate display of required seeding time
         fa = 1;
 
     function unitPrefix (prefix) {
@@ -79,7 +79,7 @@
         return res;
     }
 
-    if (showYen === true || reqTime === true) {
+    if (showYen.toString() === 'true' || reqTime.toString() === 'true') {
         var torrents, cells, seeders, leechers, size, sizeIndex, sizeRe, andRe, durationRe, torrentId, newCell, header, newHeader, lastHeaderCell, sum = 0, seedingTime, duration;
         
         torrents = document.querySelectorAll('tr.torrent,tr.group_torrent');
@@ -107,7 +107,7 @@
             if (size === null || isNaN(seeders) || isNaN(leechers))
                 continue;
 
-            if (reqTime === true) {
+            if (reqTime.toString() === 'true') {
                 size = parseFloat(size[1].replace(/,/g, '')) * unitPrefix(size[2]);
                 seedingTime = Math.max(0, size - 10) * 5 + 72;
                 cells[sizeIndex].title = 'You need to seed this torrent for at least\n' + dur2string(seedingTime) + '\nor it will become a hit and run!';
@@ -128,7 +128,7 @@
                 }
             }
 
-            if (showYen) {
+            if (showYen.toString() === 'true') {
                 duration = 0;
                 if (document.URL.indexOf('type=seeding') >= 0) {
                     duration = cells[3].textContent.replace(andRe, '').match(durationRe);
@@ -177,7 +177,7 @@
             }
         }
 
-        if (showYen) {
+        if (showYen.toString() === 'true') {
             var myColSpan;
             console.log("Sum of Yen for all torrents on this site:", sum);
 
