@@ -5,7 +5,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Highlights torrents which might become a Hit & Run; allows sorting on all history-pages
 // @include     http*://animebytes.tv*alltorrents.php*
-// @version     0.81
+// @version     0.82
 // @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
@@ -13,7 +13,7 @@
 
 
 (function() {
-  var a1, a2, allRows, andRe, clonedNode, colorRows, curPage, currencyRe, dateTimeRe, downIndex, downRe, dur2string, durIndex, durationRe, dynamicLoad, header, headers, index, lastPage, line_color_neg, line_color_neu, line_color_pos, loadPage, multiRatio, newPagenum, nextPage, pagenum, pagenums, parseCell, parseRows, prevPage, ratioIndex, ratioRe, sizeIndex, sizeRe, sortFunctions, sortIndex, sortRows, unitPrefix, _i, _j, _len, _len1;
+  var a1, a2, allRows, andRe, clonedNode, colorRows, curPage, currencyRe, dateTimeRe, downIndex, downRe, dur2string, durIndex, durationRe, dynamicLoad, header, headers, index, lastPage, lcNegBG, lcNegFG, lcNeuBG, lcNeuFG, lcPosBG, lcPosFG, line_color_neg, line_color_neu, line_color_pos, loadPage, multiRatio, newPagenum, nextPage, pagenum, pagenums, parseCell, parseRows, prevPage, ratioIndex, ratioRe, sizeIndex, sizeRe, sortFunctions, sortIndex, sortRows, unitPrefix, _i, _j, _len, _len1;
 
   colorRows = GM_getValue('ABHistColorRows', 'true');
 
@@ -21,11 +21,23 @@
 
   dynamicLoad = GM_getValue('ABHistDynLoad', 'true');
 
-  line_color_neg = ['NavajoWhite', 'Black'];
+  lcPosBG = GM_getValue('ABHistColorPosBG', 'PaleGreen');
 
-  line_color_neu = ['Khaki', 'Black'];
+  lcNeuBG = GM_getValue('ABHistColorNeuBG', 'Khaki');
 
-  line_color_pos = ['PaleGreen', 'Black'];
+  lcNegBG = GM_getValue('ABHistColorNegBG', 'NavajoWhite');
+
+  lcPosFG = GM_getValue('ABHistColorPosFG', 'Black');
+
+  lcNeuFG = GM_getValue('ABHistColorNeuFG', 'Black');
+
+  lcNegFG = GM_getValue('ABHistColorNegFG', 'Black');
+
+  line_color_neg = [lcNegBG, lcNegFG];
+
+  line_color_neu = [lcNeuBG, lcNeuFG];
+
+  line_color_pos = [lcPosBG, lcPosFG];
 
   sizeRe = /^([\d\.]+)\s([A-Z]?)B$/i;
 
@@ -189,7 +201,7 @@
       downloaded = 0;
       size = 0;
       ratio = 0;
-      line_color = [null, null];
+      line_color = ['', ''];
       if (downIndex != null) {
         _ref = myData[downIndex], downloaded = _ref[0], completion = _ref[1];
         if (completion > 0) {
@@ -225,10 +237,10 @@
           myData[durIndex] = Math.min(0.000001 * (completion + 1), minSeedingTime - seedingTime);
         }
         if (colorRows.toString() === 'true') {
-          if (line_color[0] != null) {
+          if (line_color[0] !== '') {
             row.style.backgroundColor = line_color[0];
           }
-          if (line_color[1] != null) {
+          if (line_color[1] !== '') {
             row.style.color = line_color[1];
           }
         }
