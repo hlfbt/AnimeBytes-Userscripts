@@ -90,7 +90,7 @@
         fa = 2 - 1 / (1 + Math.exp(5 - ((new Date()).getTime() - GM_getValue('creation', 0)) / 1728000000)); // milliseconds per 20 days
 
         for (var i = 0; i < torrents.length; i++) {
-            cells = torrents[i].getElementsByTagName('td');
+            cells = torrents[i].cells;
             size = null;
             if (cells.length === 5) {
                 seeders = parseInt(cells[3].textContent, 10);
