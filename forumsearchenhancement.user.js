@@ -5,7 +5,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Load posts into search results; highlight search terms; filter authors; slide through posts
 // @include     http*://animebytes.tv/forums.php*
-// @exclude	*action=viewthread*
+// @exclude     *action=viewthread*
 // @version     0.7
 // @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
@@ -117,8 +117,8 @@
       pagenums.appendChild(prevPost);
       pagenums.appendChild(nextPost);
       linkbox.appendChild(pagenums);
-      prevPost.addEventListener('click', showPost(sR[id], true), true);
-      nextPost.addEventListener('click', showPost(sR[id], false), true);
+      prevPost.addEventListener('click', showPost(id, true), true);
+      nextPost.addEventListener('click', showPost(id, false), true);
       tr = document.createElement('tr');
       td = document.createElement('td');
       myColsp = 0;
@@ -132,7 +132,7 @@
       td.appendChild(tP[threadPage][sR[id].index]);
       tr.appendChild(td);
       sR[id].td = td;
-      return sR[id].parent.parentNode.insertBefore(tr, sR[id].parent.nextSibling);
+      sR[id].parent.parentNode.insertBefore(tr, sR[id].parent.nextSibling);
     };
   };
 
@@ -144,7 +144,7 @@
     xhr = new XMLHttpRequest();
     xhr.open('GET', "https://animebytes.tv/forums.php?action=viewthread&" + threadPage, true);
     xhr.send();
-    return xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function() {
       var callback, parser, post, _i, _j, _len, _len1, _ref, _ref1;
       if (xhr.readyState === 4) {
         parser = new DOMParser();
@@ -184,9 +184,9 @@
       }
       if (id in sR) {
         if (filtered === true) {
-          return filterPost(id)();
+          filterPost(id)();
         } else {
-          return toggleVisibility(sR[id]);
+          toggleVisibility(id);
         }
       } else {
         page = link.href.match(/page=(\d+)/i);
@@ -197,37 +197,40 @@
           if (tP[threadPage] === 'Loading') {
             cb[threadPage].push(processThreadPage(id, threadid, page, node, newLink));
             if (filtered === true) {
-              return cb[threadPage].push(filterPost(id));
+              cb[threadPage].push(filterPost(id));
             }
           } else {
             processThreadPage(id, threadid, page, node, newLink)();
             if (filtered === true) {
-              return filterPost(id)();
+              filterPost(id)();
             }
           }
         } else {
           loadThreadPage(threadid, page);
           cb[threadPage].push(processThreadPage(id, threadid, page, node, newLink));
           if (filtered === true) {
-            return cb[threadPage].push(filterPost(id));
+            cb[threadPage].push(filterPost(id));
           }
         }
       }
     };
   };
 
-  toggleVisibility = function(elem) {
+  toggleVisibility = function(id) {
+    var elem;
+    elem = sR[id];
     if (elem.td.parentNode.style.visibility === 'collapse') {
-      showPost(elem, null)();
+      showPost(id, null)();
       return elem.td.parentNode.style.visibility = 'visible';
     } else {
       return elem.td.parentNode.style.visibility = 'collapse';
     }
   };
 
-  showPost = function(elem, prev) {
+  showPost = function(id, prev) {
     return function(event) {
-      var nextTP, prevTP, threadPage;
+      var elem, nextTP, prevTP, threadPage;
+      elem = sR[id];
       threadPage = "threadid=" + elem.threadid + "&page=" + elem.page;
       nextTP = "threadid=" + elem.threadid + "&page=" + (elem.page + 1);
       prevTP = "threadid=" + elem.threadid + "&page=" + (elem.page - 1);
@@ -239,45 +242,53 @@
         if (elem.index === 0 && elem.page > 1) {
           if (prevTP in tP) {
             if (tP[prevTP] === 'Loading') {
-              return cb[prevTP].push(showPost(elem, prev));
+              cb[prevTP].push(showPost(id, prev));
             } else {
               elem.page = elem.page - 1;
               elem.index = tP[prevTP].length - 1;
-              return elem.td.replaceChild(tP[prevTP][elem.index], elem.td.lastChild);
+              elem.td.replaceChild(tP[prevTP][elem.index], elem.td.lastChild);
             }
           } else {
             loadThreadPage(elem.threadid, elem.page - 1);
-            return cb[prevTP].push(showPost(elem, prev));
+            cb[prevTP].push(showPost(id, prev));
           }
         } else {
           elem.index = Math.max(elem.index - 1, 0);
-          return elem.td.replaceChild(tP[threadPage][elem.index], elem.td.lastChild);
+          if (elem.td.children.length === 2) {
+            elem.td.replaceChild(tP[threadPage][elem.index], elem.td.lastChild);
+          } else {
+            elem.td.appendChild(tP[threadPage][elem.index]);
+          }
         }
       } else if (prev === false) {
         if (elem.index === 24) {
           if (nextTP in tP) {
             if (tP[nextTP] === 'Loading') {
-              return cb[prevTP].push(showPost(elem, prev));
+              cb[prevTP].push(showPost(id, prev));
             } else {
               if (tP[nextTP].length > 0) {
                 elem.page = elem.page + 1;
                 elem.index = 0;
-                return elem.td.replaceChild(tP[nextTP][0], elem.td.lastChild);
+                elem.td.replaceChild(tP[nextTP][0], elem.td.lastChild);
               }
             }
           } else {
             loadThreadPage(elem.threadid, elem.page + 1);
-            return cb[nextTP].push(showPost(elem, prev));
+            cb[nextTP].push(showPost(id, prev));
           }
         } else {
           elem.index = Math.min(elem.index + 1, tP[threadPage].length - 1);
-          return elem.td.replaceChild(tP[threadPage][elem.index], elem.td.lastChild);
+          if (elem.td.children.length === 2) {
+            elem.td.replaceChild(tP[threadPage][elem.index], elem.td.lastChild);
+          } else {
+            elem.td.appendChild(tP[threadPage][elem.index]);
+          }
         }
       } else {
-        if (elem.td.hasChildNodes() === true) {
-          return elem.td.replaceChild(tP[threadPage][elem.index], elem.td.lastChild);
+        if (elem.td.children.length === 2) {
+          elem.td.replaceChild(tP[threadPage][elem.index], elem.td.lastChild);
         } else {
-          return elem.td.appendChild(tP[threadPage][elem.index]);
+          elem.td.appendChild(tP[threadPage][elem.index]);
         }
       }
     };
@@ -297,7 +308,7 @@
       }
       if (toFilter) {
         elem.td.parentNode.style.visibility = 'collapse';
-        return elem.parent.style.visibility = 'collapse';
+        elem.parent.style.visibility = 'collapse';
       }
     };
   };
