@@ -5,7 +5,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Highlights torrents which might become a Hit & Run; allows sorting on all history-pages
 // @include     http*://animebytes.tv*alltorrents.php*
-// @version     0.82
+// @version     0.83
 // @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
@@ -21,11 +21,11 @@
 
   dynamicLoad = GM_getValue('ABHistDynLoad', 'true');
 
-  lcPosBG = GM_getValue('ABHistColorPosBG', 'PaleGreen');
+  lcPosBG = GM_getValue('ABHistColorPosBG', '#B0F0B0');
 
-  lcNeuBG = GM_getValue('ABHistColorNeuBG', 'Khaki');
+  lcNeuBG = GM_getValue('ABHistColorNeuBG', '#F0F0B0');
 
-  lcNegBG = GM_getValue('ABHistColorNegBG', 'NavajoWhite');
+  lcNegBG = GM_getValue('ABHistColorNegBG', '#F0B0B0');
 
   lcPosFG = GM_getValue('ABHistColorPosFG', 'Black');
 
@@ -237,10 +237,10 @@
           myData[durIndex] = Math.min(0.000001 * (completion + 1), minSeedingTime - seedingTime);
         }
         if (colorRows.toString() === 'true') {
-          if (line_color[0] !== '') {
+          if (line_color[0] !== 'none') {
             row.style.backgroundColor = line_color[0];
           }
-          if (line_color[1] !== '') {
+          if (line_color[1] !== 'none') {
             row.style.color = line_color[1];
           }
         }

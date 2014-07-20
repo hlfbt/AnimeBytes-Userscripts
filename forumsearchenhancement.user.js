@@ -6,7 +6,7 @@
 // @description Load posts into search results; highlight search terms; filter authors; slide through posts
 // @include     http*://animebytes.tv/forums.php*
 // @exclude     *action=viewthread*
-// @version     0.7
+// @version     0.71
 // @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
@@ -55,7 +55,7 @@
 
   textReplace = function(elem) {
     var node, regExp, walk;
-    if (patt !== '' && (background_color !== '' || text_color !== '')) {
+    if (patt !== '' && (background_color !== 'none' || text_color !== 'none')) {
       walk = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT, null, false);
       node = walk.nextNode();
       regExp = new RegExp('(' + patt + ')', 'i');
@@ -67,10 +67,10 @@
           newTextNode = node.splitText(offset);
           newTextNode.textContent = newTextNode.textContent.substr(term.length);
           newSpan = document.createElement('span');
-          if (background_color !== '') {
+          if (background_color !== 'none') {
             newSpan.style.backgroundColor = background_color;
           }
-          if (text_color !== '') {
+          if (text_color !== 'none') {
             newSpan.style.color = text_color;
           }
           newSpan.appendChild(document.createTextNode(term));
