@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name AnimeBytes Round Avatars
 // @author potatoe
-// @version 1.1
+// @version 1.2
 // @description Makes avatars round and normal on hover!
 // @include https://animebytes.tv/*
 // @icon https://animebytes.tv/favicon.ico
@@ -38,17 +38,17 @@ if (!this.GM_addStyle || (this.GM_addStyle.toString && this.GM_addStyle.toString
 
 GM_addStyle(
 	  '.avatar {\n'
-	+ '  max-height: 150px;\n'
+	+ '  max-height: 150px !important;\n'
 	+ '  border-radius: 75px 75px 75px 75px;\n'
 //	+ '  border-radius: 0 75px 75px 75px;\n'
 	+ '}\n'
 	+ '.avatar_c {\n'
-	+ '  max-height: 100px;\n'
+	+ '  max-height: 100px !important;\n'
 	+ '  border-radius: 50px 50px 50px 50px;\n'
 //	+ '  border-radius: 5px 50px 5px 50px;\n'
 	+ '}\n'
 	+ '.friendslist > dt {\n'
-	+ '  max-height: 70px;\n'
+	+ '  max-height: 70px !important;\n'
 	+ '  border-radius: 35px 35px 35px 35px;\n'
 //	+ '  border-radius: 5px 5px 5px 5px;\n'
 	+ '  height: auto !important;\n'
