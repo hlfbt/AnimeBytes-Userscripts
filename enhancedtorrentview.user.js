@@ -3,7 +3,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Shows how much yen you would receive if you seeded torrents; shows required seeding time
 // @include     http*://animebytes.tv*
-// @version     0.8
+// @version     0.81
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @icon        http://animebytes.tv/favicon.ico
@@ -51,7 +51,7 @@
     }
 
     function fu (myDuration) {
-        return Math.pow(2, duration / (24 * 365.25));
+        return Math.pow(2, myDuration / (24 * 365.25));
     }
 
     function fs (mySize) {
@@ -80,14 +80,16 @@
     }
 
     if (showYen.toString() === 'true' || reqTime.toString() === 'true') {
-        var torrents, cells, seeders, leechers, size, sizeIndex, sizeRe, andRe, durationRe, torrentId, newCell, header, newHeader, lastHeaderCell, sum = 0, seedingTime, duration;
+        var torrents, cells, seeders, leechers, size, sizeIndex, sizeRe, andRe, durationRe, torrentId, newCell, header, newHeader, lastHeaderCell, sum = 0, seedingTime, duration, durMatch;
         
         torrents = document.querySelectorAll('tr.torrent,tr.group_torrent');
         sizeRe = /^([\d\.,]+)\s([A-Z]?)B$/i;
         andRe = /(and|\s|,)/ig;
         durationRe = /^(?:(\d+)years?)?(?:(\d+)months?)?(?:(\d+)weeks?)?(?:(\d+)days?)?(?:(\d+)hours?)?(?:(\d+)minutes?)?(?:(\d+)seconds?)?$/i;
         
-        fa = 2 - 1 / (1 + Math.exp(5 - ((new Date()).getTime() - GM_getValue('creation', 0)) / 1728000000)); // milliseconds per 20 days
+        fa = 2 - 1 / (1 + Math.exp(5 - ((new Date()).getTime() - parseInt(GM_getValue('creation', '0'), 10)) / 1728000000)); // milliseconds per 20 days
+        if (isNaN(fa))
+            fa = 1;
 
         for (var i = 0; i < torrents.length; i++) {
             cells = torrents[i].cells;
@@ -131,22 +133,25 @@
             if (showYen.toString() === 'true') {
                 duration = 0;
                 if (document.URL.indexOf('type=seeding') >= 0) {
-                    duration = cells[3].textContent.replace(andRe, '').match(durationRe);
-                    if (duration != null) {
-                        duration = (function() {
+                    durMatch = cells[3].textContent.replace(andRe, '').match(durationRe);
+                    if (durMatch != null) {
+                        durMatch = (function() {
                             var _i, _len, _results, _num;
                             _results = [];
-                            for (_i = 1, _len = duration.length; _i < _len; _i++) {
-                                _num = duration[_i];
+                            for (_i = 1, _len = durMatch.length; _i < _len; _i++) {
+                                _num = durMatch[_i];
                                 if (_num != null) {
-                                    _results.push(parseInt(_num, 10));
+                                    if (isNaN(parseInt(_num, 10)))
+                                        _results.push(0);
+                                    else
+                                        _results.push(parseInt(_num, 10));
                                 } else {
                                     _results.push(0);
                                 }
                             }
                             return _results;
                         })();
-                        duration = 24 * (duration[0] * 365.25 + duration[1] * 30.4375 + duration[2] * 7 + duration[3]) + duration[4] + duration[5] / 60 + duration[6] / 3600;
+                        duration = 24 * (durMatch[0] * 365.25 + durMatch[1] * 30.4375 + durMatch[2] * 7 + durMatch[3]) + durMatch[4] + durMatch[5] / 60 + durMatch[6] / 3600;
                     }
                 }
                 sum += f(size, seeders, duration);
@@ -178,8 +183,7 @@
         }
 
         if (showYen.toString() === 'true') {
-            var myColSpan;
-            console.log("Sum of Yen for all torrents on this site:", sum);
+            console.log("Sum of Yen per hour for all torrents on this site:", sum);
 
             torrents = document.querySelectorAll('tr.edition_info,tr.pad,tr[id^="group_"]');
             for (var i = 0; i < torrents.length; i++) {
