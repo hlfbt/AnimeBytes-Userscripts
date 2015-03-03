@@ -6,7 +6,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Highlights torrents which might become a Hit & Run; allows sorting on all history-pages
 // @include     http*://animebytes.tv*alltorrents.php*
-// @version     0.85
+// @version     0.86
 // @grant       GM_getValue
 // @icon        http://animebytes.tv/favicon.ico
 // ==/UserScript==
@@ -47,7 +47,7 @@
 
   andRe = /(and|\s)/ig;
 
-  durationRe = /^(?:(\d+)years?)?(?:(\d+)months?)?(?:(\d+)weeks?)?(?:(\d+)days?)?(?:(\d+)hours?)?(?:(\d+)minutes?)?(?:(\d+)seconds?)?(\s*\([^)]*\))?$/i;
+  durationRe = /^(?:(\d+)years?)?(?:(\d+)months?)?(?:(\d+)weeks?)?(?:(\d+)days?)?(?:(\d+)hours?)?(?:(\d+)minutes?)?(?:(\d+)seconds?)?(\s*\([^)]*\)\s*)*$/i;
 
   dateTimeRe = /^(\d+)\-(\d{1,2})\-(\d{1,2})\s+(\d{1,2}):(\d{1,2})$/i;
 
@@ -174,7 +174,7 @@
         default:
           return parseFloat(match[1]);
       }
-    } else if (textContentNoComma === 'Never') {
+    } else if (/^Never(\s*\([^)]*\)\s*)*$/i.test(textContentNoComma)) {
       durIndex = index;
       return 0;
     } else {
