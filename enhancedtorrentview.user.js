@@ -3,7 +3,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Shows how much yen you would receive if you seeded torrents; shows required seeding time
 // @include     http*://animebytes.tv*
-// @version     0.82
+// @version     0.83
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @icon        http://animebytes.tv/favicon.ico
@@ -12,6 +12,7 @@
 (function() {
     var showYen = GM_getValue('ABTorrentsShowYen', 'true'), // true / false: activate / deactivate display of yen production per hour
         reqTime = GM_getValue('ABTorrentsReqTime', 'true'), // true / false: activate / deactivate display of required seeding time
+        timeFrame = parseInt(GM_getValue('ABTorrentsYenTimeFrame', '1'), 10),
         fa = 1;
 
     function unitPrefix (prefix) {
@@ -50,6 +51,12 @@
         return durationString;
     }
 
+    function yen2string (yen) {
+        if (timeFrame >= 100) return Math.round(yen);
+        else if (timeFrame >= 10) return yen.toFixed(1);
+        else return yen.toFixed(2);
+    }
+
     function fu (myDuration) {
         return Math.pow(2, myDuration / (24 * 365.25));
     }
@@ -63,7 +70,7 @@
     }
 
     function f (mySize, mySeeders, myDuration) {
-        return fs(mySize) * fu(myDuration) * ft(mySeeders) * fa;
+        return fs(mySize) * fu(myDuration) * ft(mySeeders) * fa * timeFrame;
     }
 
     function createTitle (start, end, mySize, myDuration) {
@@ -82,8 +89,9 @@
     if (showYen.toString() === 'true' || reqTime.toString() === 'true') {
         var torrents, cells, seeders, leechers, size, sizeIndex, sizeRe, andRe, durationRe, torrentId, newCell, header, newHeader, lastHeaderCell, sum = 0, seedingTime, duration, durMatch;
 
-        function processTorrentTable(torrent_table, deselected) {
+        function processTorrentTable(torrent_table, deselected, oldBox) {
             var torrents = torrent_table.querySelectorAll('.group_torrent');
+            if (torrents.length <= 1) return;
             var values = [];
             for (var i = 0; i < torrents.length; i++) {
                 var torrent = torrents[i];
@@ -100,7 +108,7 @@
                         if (values[j][val] === undefined)
                             values[j][val] = 0;
                         if (torrent.style.visibility !== 'collapse')
-                            values[j][val] = 1
+                            values[j][val] = 1;
                     }
                 }
             }
@@ -143,7 +151,7 @@
                         else
                             torrent.style.visibility = 'visible';
                     }
-                    processTorrentTable(torrent_table, illegal);
+                    processTorrentTable(torrent_table, illegal, box);
                 });
                 box.className = 'box';
                 head.className = 'head colhead strong';
@@ -164,8 +172,8 @@
                 head.addEventListener('click', headClickEvent );
                 box.appendChild(head);
                 box.appendChild(body);
-                if (torrent_table.previousElementSibling !== null && torrent_table.previousElementSibling.className === 'box') {
-                    torrent_table.parentNode.replaceChild(box, torrent_table.previousElementSibling);
+                if (oldBox !== null) {
+                    torrent_table.parentNode.replaceChild(box, oldBox);
                     headClickEvent();
                 }
                 else
@@ -173,11 +181,11 @@
             }
         }
 
-        if (GM_getValue('ABTorrentsFilter', 'true') === 'true') {
+        if (GM_getValue('ABTorrentsFilter', 'false') === 'true' && document.getElementById('collage') == null) {
             var torrent_tables = document.querySelectorAll('.torrent_table');
             for (var i = 0; i < torrent_tables.length; i++) {
                 var torrent_table = torrent_tables[i];
-                processTorrentTable(torrent_table, {});
+                processTorrentTable(torrent_table, {}, null);
             }
         }
         
@@ -256,8 +264,8 @@
                 sum += f(size, seeders, duration);
 
                 newCell = document.createElement('td');
-                newCell.textContent = '¥' + f(size, seeders, duration).toFixed(2);
-                newCell.title = '¥' + fs(size).toPrecision(6)                      + '  \tbase for size';
+                newCell.textContent = '¥' + yen2string(f(size, seeders, duration));
+                newCell.title = '¥' + (timeFrame * fs(size)).toPrecision(6)                      + '  \tbase for size';
                 if ((100 * (fa           - 1)).toFixed(1) !== '0.0')
                     newCell.title += '\n+' + (100 * (fa           - 1)).toFixed(1) + '% \tfor your account\'s age';
                 if ((100 * (fu(duration) - 1)).toFixed(1) !== '0.0')
@@ -268,13 +276,16 @@
                 torrents[i].appendChild(newCell);
                 header = torrents[i].parentNode.firstChild;
                 if (countCols(header) + 1 === countCols(torrents[i])) {
+                    var timeFrameStr = "hour";
+                    if (timeFrame == 24) timeFrameStr = "day";
+                    if (timeFrame == 168) timeFrameStr = "week";
                     newHeader = header.children[1].cloneNode(true);
-                    newHeader.title = '¥ per hour';
+                    newHeader.title = '¥ per ' + timeFrameStr;
                     if (newHeader.textContent !== '') {
                         if (newHeader.children.length > 0)
-                            newHeader.children[0].textContent = '¥/h';
+                            newHeader.children[0].textContent = '¥/' + timeFrameStr.charAt(0);
                         else
-                            newHeader.textContent = '¥/h';
+                            newHeader.textContent = '¥/' + timeFrameStr.charAt(0);
                     }
                     header.appendChild(newHeader);
                 }
