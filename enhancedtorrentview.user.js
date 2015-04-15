@@ -20,11 +20,11 @@
 
   reqTime = GM_getValue('ABTorrentsReqTime', 'true');
 
-  sortRows = GM_getValue('ABHistSortRows', 'true');
-
-  dynamicLoad = GM_getValue('ABHistDynLoad', 'true');
+  sortRows = GM_getValue('ABSortTorrents', 'true');
 
   torrentsFilter = GM_getValue('ABTorrentsFilter', 'true');
+
+  dynamicLoad = GM_getValue('ABHistDynLoad', 'true');
 
   timeFrame = parseInt(GM_getValue('ABTorrentsYenTimeFrame', '24'), 10);
 
