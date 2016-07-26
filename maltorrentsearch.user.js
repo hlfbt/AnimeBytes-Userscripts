@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded',function(){
         year = $(".spaceit, .spaceit + div").filter(function(index){ return (~this.innerHTML.indexOf('Aired') || ~this.innerHTML.indexOf('Published'))}).first().text().match(/\d{4}/ig)[0];
 
     a = document.title;
-    b = a.replace(' - MyAnimeList.net', '');
+    b = a.replace(' - MyAnimeList.net', '').replace(' | Manga', '');
 
     var link = '<a id="animebytes" target="_blank" title="Search '+b+' ('+year+') on animebytes.tv" href="http://animebytes.tv/torrents.php?searchstr=' + b + '&year=' + year + '">AnimeBytes Search</a>';
     //link += '<a id="nyaa" target="_blank" title="Search '+anime+' ('+year+') on nyaa.eu" href="http://www.nyaa.eu/?page=search&cats=1_37&filter=0&term=' + anime_enc + '">NyaaTorrents Search</a>';
