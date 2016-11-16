@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Total seeding size
-// @version      1.2
+// @version      1.3
 // @description  Displays the total seeding size of a user
 // @author       Amethyste, Potatoe
 // @match        https://animebytes.tv/user.php?id=*
-// @updateUrl    https://raw.github.com/rakiru/AnimeBytes-Userscripts/master/Total_seeding_size.user.js
+// @updateUrl    https://raw.github.com/tubersan/AnimeBytes-Userscripts/master/Total_seeding_size.user.js
 // @grant        none
 // ==/UserScript==
 
@@ -21,19 +21,19 @@ function バイト(大きさ,フォーマット)
         case "TB":
             return 大きさ *1024 *1024 *1024 *1024;
     }
-    
+
 }
 
 function だれでもみな(バイト単位のサイズ)
 {
-    
+
     var 私 = -1;
     var ユニット = [' KB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
     do {
         バイト単位のサイズ = バイト単位のサイズ / 1024;					//人間の読書変換
         私++;
     } while (バイト単位のサイズ > 1024);
-    
+
     return Math.max(バイト単位のサイズ, 0.0).toFixed(1) + ユニット[私];
 }
 
@@ -67,7 +67,6 @@ function getページ()
             get一覧表();
         }
     });
-    
 }
 
 function get一覧表(){
@@ -80,7 +79,13 @@ function get一覧表(){
             重要(); 							// 嫌らしい asynchronous shit
         } else {
             私++;
-            get一覧表();
+            //if (私 % 5 === 0) {
+            //    $("#seedsize").text("Cooldown... (" + 私 + "/" + ページ + ")");
+            //    window.setTimeout(get一覧表, 3e3);
+            //} else {
+            //    get一覧表();
+            //}
+            window.setTimeout(get一覧表, 1e3);
         }
     });
 }
