@@ -1,7 +1,8 @@
 // ==UserScript==
-// @name          AnimeBytes torrent search from MyAnimeList
-// @include       http://myanimelist.net/anime*
-// @include       http://myanimelist.net/manga*
+// @name          Animebytes torrent search from MyAnimeList
+// @include       http://myanimelist.net/anime/*
+// @include       http://myanimelist.net/manga/*
+// @run-at        document-start
 // ==/UserScript==
 
 document.addEventListener('DOMContentLoaded',function(){
@@ -12,11 +13,12 @@ document.addEventListener('DOMContentLoaded',function(){
         (document.getElementsByTagName('head')[0] || document.documentElement).appendChild(css);
     };
     var $ = ((typeof unsafeWindow !== 'undefined') ? unsafeWindow : window).jQuery,
-        anime = $("h1").contents().filter(function() { return this.nodeType == 3; }).first().text().replace(/\(Movie\)|[!\?:\.,]+/ig,'').trim();
-        anime_enc = encodeURIComponent(anime),
         year = $(".spaceit, .spaceit + div").filter(function(index){ return (~this.innerHTML.indexOf('Aired') || ~this.innerHTML.indexOf('Published'))}).first().text().match(/\d{4}/ig)[0];
 
-    var link = '<a id="animebytes" target="_blank" title="Search '+anime+' ('+year+') on animebytes.tv" href="http://animebytes.tv/torrents.php?searchstr=' + anime_enc + '&year=' + year + '">AnimeBytes Search</a>';
+    a = document.title;
+    b = a.replace(' - MyAnimeList.net', '').replace(' | Manga', '');
+
+    var link = '<a id="animebytes" target="_blank" title="Search '+b+' ('+year+') on animebytes.tv" href="http://animebytes.tv/torrents.php?searchstr=' + b + '&year=' + year + '">AnimeBytes Search</a>';
     //link += '<a id="nyaa" target="_blank" title="Search '+anime+' ('+year+') on nyaa.eu" href="http://www.nyaa.eu/?page=search&cats=1_37&filter=0&term=' + anime_enc + '">NyaaTorrents Search</a>';
     add_css('\
         #animebytes { padding-left: 19px !important; background-position:left 70%; vertical-align: middle; background-image: url(data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAACMuAAAjLgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAIbhcwCG5PMAhuejAIbncwCG5LMAhuLDAIbk8wCG56MAhuhzAIbocwCG6HMAhuhzAIbnowCG5PMAhuFwAAAAAwCG5PMAhu0DAIbvowCG76MAhu0TAIbpkwCG7UMAhu+zAIbv4wCG7+MAhu/jAIbv4wCG77MAhu2jAIbnMwCG4WMAhueTAIbvptFe3/axXp/zAIb/8wCG7zPQuJ/20V7P9tFe3/bRXt/20V7f9tFe3/bRXt/z0LiP8wCG7YMAhuTTAIbnQwCG74bBvk/3Ec7f9HD5r/MAhu/0MOk/9xHO3/cBzs/1gUvP9SErD/YxjR/3Ec7f9vHOr/MAhu+jAIbnkwCG5PMAhu31EWqv92Je3/diXt/3Yl7f92Je3/diXt/2og2P8wCG7/MAhu/zAIbv92Je3/diXt/zAIbvswCG59MAhuITAIbqk+D4X+ey7r/3su6/98L+3/dizj/3wv7f9xKdr/MAhu/1AYo/9wKdr/fC/t/2Miw/8wCG7qMAhuXTAIbgYwCG5nMAhu7GUowf+COe3/WSGu/zAIbv+BOOz/dTLa/z8Rhf+AOOr/gjnt/3kz3/8wCG7/MAhuzzAIbkEAAAAAMAhuLjAIbrtIGJH/h0Lt/1Adnf8wCG7/hUDq/3w73f8wCG7/MAhu/3I0z/+HQu3/Xyiz/zAIbuEwCG5SAAAAADAIbgowCG55MAhu9Xk90/+MS+3/aDG8/4tK6/+DReH/RxmO/zEJb/9ZJqb/jEvt/4ZG5P8wCG7zMAhuaAAAAAAAAAAAMAhuQzAIbtVXJqH/kFPt/5BT7f+QU+3/kFPt/5BT7f+QU+3/kFPt/5BT7f9oNLj/MAhu4zAIblQAAAAAAAAAADAIbh8wCG6kRRmJ/pBV6P+UWO3/lFjt/5RY7f+UWO3/lFjt/5RY7f+UWO3/RhmJ/jAIbq4wCG4mAAAAAAAAAAAwCG4IMAhuWjAIbtAwCG76MAhu/jAIbv4wCG7+MAhu/jAIbv4wCG7+MAhu+zAIbtQwCG5cMAhuCAAAAAAAAAAAAAAAADAIbhYwCG5LMAhudzAIboYwCG6HMAhuhzAIbocwCG6HMAhuhzAIbnowCG5PMAhuFwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAP//AAD/DwAAgAMAAIABAACAAQAAgAEAAIABAADAAQAAwAEAAOABAADgAQAA4AEAAPADAAD8DwAA//8AAA==); background-repeat:no-repeat; }\
@@ -24,4 +26,3 @@ document.addEventListener('DOMContentLoaded',function(){
     ');
    $("#profileRows a:first-child").before(link); 
 }, false);
-
