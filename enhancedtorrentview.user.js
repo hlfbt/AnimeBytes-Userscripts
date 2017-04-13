@@ -4,7 +4,7 @@
 // @namespace   Megure@AnimeBytes.tv
 // @description Shows how much yen you would receive if you seeded torrents; shows required seeding time; allows sorting and filtering of torrent tables; dynamic loading of transfer history tables
 // @include     http*://animebytes.tv*
-// @version     1.00
+// @version     1.01
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @icon        http://animebytes.tv/favicon.ico
@@ -88,7 +88,7 @@
         return row;
     }
     function get_corresponding_torrent_row(row) {
-        var anchor = row.querySelector('a[title="Download"]');
+        var anchor = row.querySelector('a[title="Report"]');
         if (anchor !== null) {
             var match = anchor.href.match(/id=(\d+)/i);
             if (match !== null) {
